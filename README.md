@@ -1,8 +1,12 @@
 # FociPy – XRCC1 Foci Analyzer
+![License](https://img.shields.io/badge/License-MIT-green) 
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=Python)
+![Stage](https://img.shields.io/badge/project-very_early_development-red)
+![Last Commit](https://img.shields.io/github/last-commit/stanuch/focipy)
 
 > [!WARNING]
 > **UNDER DEVELOPMENT - NOT YET USABLE**
->  
+> 
 > FociPy is currently under active development and is not intended for end users at this stage.
 > The software is incomplete, subject to major changes, and the results may be unreliable.
 > Do not use this tool for production or quantitative scientific analysis yet.
