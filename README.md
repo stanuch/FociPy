@@ -58,8 +58,8 @@ The repository currently serves as a development and learning environment. Core 
 focipy/
 │
 ├── data/            # Raw and processed microscopy images
-│   ├── processed/   # Processed microscopy images
-│   └── raw/         # Raw microscopy images
+│   ├── processed/
+│   └── raw/
 │
 ├── src/             # Core analysis pipeline
 │   ├── segmentation.py
