@@ -42,37 +42,18 @@ This software is being developed as part of a **master's thesis** in the field o
 - Validation: **not started**
 - Documentation: **not started**
 
-The repository currently serves as a development and learning environment. Core algorithms, parameters, and workflows are subject to change.
+The repository currently serves as a development and learning environment. Core algorithms, parameters, and workflows are yet to be defined.
 
-## Technologies (planned)
+## Technologies
 
-- Python 3
 - NumPy, SciPy
 - scikit-image, OpenCV
 - pandas, matplotlib
 - Cellpose / StarDist (optional, for nuclear segmentation)
 
-## Repository structure (planned)
-
-```text
-focipy/
-│
-├── data/            # Raw and processed microscopy images
-│   ├── processed/
-│   └── raw/
-│
-├── src/             # Core analysis pipeline
-│   ├── segmentation.py
-│   ├── foci_detection.py
-│   └── analysis.py
-│
-├── notebooks/       # Exploratory data analysis and parameter tuning
-├── results/         # Output tables and plots
-├── requirements.txt
-└── README.md
-```
-
 ## Disclaimer
 
 This project is a research prototype developed for academic purposes.
-The author makes no guarantees regarding correctness, completeness, or suitability of the results at the current development stage.
+I make no guarantees regarding correctness, completeness, or suitability of the results at the current development stage.
+
+**Detailed documentation, including usage instructions (USAGE.md), methodology (METHODS.md), and changelogs (CHANGELOG.md), can be found in the [`docs/`](docs/) directory.**
