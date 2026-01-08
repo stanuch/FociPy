@@ -44,13 +44,6 @@ This software is being developed as part of a **master's thesis** in the field o
 
 The repository currently serves as a development and learning environment. Core algorithms, parameters, and workflows are yet to be defined.
 
-## Technologies
-
-- NumPy, SciPy
-- scikit-image, OpenCV
-- pandas, matplotlib
-- Cellpose / StarDist (optional, for nuclear segmentation)
-
 ## Disclaimer
 
 This project is a research prototype developed for academic purposes.
