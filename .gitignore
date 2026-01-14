@@ -4,6 +4,12 @@ __pycache__/
 *$py.class
 .DS_Store
 
+# Images (for now at least)
+*.jpg
+*.png
+*.tif
+*.tiff
+
 # C extensions
 *.so
 
