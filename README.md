@@ -2,20 +2,21 @@
   <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="500">
 </p>
 
+**FociPy** is an open-source Python pipeline designed for the automated detection, segmentation, and quantification of protein accumulation at DNA damage sites. While specifically optimized for analyzing XRCC1 foci in response to light-induced DNA damage, the core architecture is modular and can be adapted to various nuclear markers. 
+
+It aims to provide a reproducible and objective alternative to manual foci counting, enabling high-throughput analysis of large microscopy datasets. This software is being developed as part of a **master's thesis** in the field of bioimage analysis and computational biology.
+
+![License](https://img.shields.io/badge/License-MIT-green) 
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=Python)
+![Stage](https://img.shields.io/badge/project-very_early_development-red)
+![Last Commit](https://img.shields.io/github/last-commit/stanuch/focipy)
+
 > [!WARNING]
 > **UNDER DEVELOPMENT - NOT YET USABLE**
 > 
 > FociPy is currently under active development and is not intended for end users at this stage.
 > The software is incomplete, subject to major changes, and the results may be unreliable.
 > Do not use this tool for production or quantitative scientific analysis yet.
-
-## Overview
-
-**FociPy** is a Python-based pipeline for automated detection and quantification of XRCC1 DNA damage foci in cell nuclei from fluorescence microscopy images.
-
-The project focuses on image-based analysis of protein accumulation in response to light-induced DNA damage. It aims to provide a reproducible and objective alternative to manual foci counting, enabling high-throughput analysis of large microscopy datasets.
-
-This software is being developed as part of a **master's thesis** in the field of bioimage analysis and computational biology.
 
 ## Project goals
 
