@@ -6,7 +6,6 @@ __pycache__/
 
 # Images (for now at least)
 *.jpg
-*.png
 *.tif
 *.tiff
 
