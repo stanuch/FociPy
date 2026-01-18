@@ -1,12 +1,6 @@
 <p align="center">
-  <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="400">
+  <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="500">
 </p>
-
-
-![License](https://img.shields.io/badge/License-MIT-green) 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=Python)
-![Stage](https://img.shields.io/badge/project-very_early_development-red)
-![Last Commit](https://img.shields.io/github/last-commit/stanuch/focipy)
 
 > [!WARNING]
 > **UNDER DEVELOPMENT - NOT YET USABLE**
