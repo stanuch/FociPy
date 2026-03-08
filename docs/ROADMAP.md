@@ -1,27 +1,39 @@
-# Development plan for the FociPy project
+# Development Roadmap
 
-## Phase 1: Prototyping & Segmentation (Current Stage)
-- [x] Repository setup and project structure
-- [x] Implement image loading (support for .tif / .czi formats)
-- [ ] Test nuclear segmentation algorithms (e.g., Otsu vs. Cellpose comparison)
-- [ ] Create basic `segmentation.py` script
+> Track progress here. Mark items with [x] as you complete them.
 
-## Phase 2: Foci Detection
-- [ ] Implement Difference of Gaussians (DoG) algorithm
-- [ ] Parameter tuning/calibration on sample data
-- [ ] Visualization of detection results (overlaying masks and points on images)
+## Phase 1: Architecture & Setup ✅
 
-## Phase 3: Quantitative Analysis & Pipeline
-- [ ] Count foci within nuclear masks
-- [ ] Export results to CSV/Excel files
-- [ ] Automate batch processing (full directory iteration)
+- [x] Project structure, module stubs, pyproject.toml
+- [x] Documentation templates
 
-## Phase 4: Validation & Documentation
-- [ ] Compare automated results with manual counting (Ground Truth validation)
-- [ ] Generate plots and tables for the thesis
-- [ ] Finalize `METHODS.md`
-- [ ] Code cleanup and refactoring
+## Phase 2: Core Implementation
 
-## Backlog / Future Improvements
-- [ ] GUI (Simple graphical interface, e.g., Streamlit or Napari plugin)
-- [ ] Nuclear shape analysis (circularity, area, solidity)
+- [ ] `config.py`
+- [ ] `io_utils.py` — .lif support, metadata
+- [ ] `preprocessing.py`
+- [ ] `segmentation.py`
+
+## Phase 3: Kinetics Pipeline
+
+- [ ] `kinetics.py` — ROI tracking, normalization
+- [ ] `quantification.py` — t_half, I_max
+- [ ] Test on real data
+
+## Phase 4: Output & Visualization
+
+- [ ] `reporting.py`, `visualization.py`
+- [ ] `pipeline.py`, `__main__.py` (CLI)
+
+## Phase 5: Validation & Thesis
+
+- [ ] Compare with manual analysis (ImageJ/FIJI)
+- [ ] Dose-response experiments
+- [ ] Thesis plots and tables
+
+## Backlog
+
+- [ ] Cellpose vs Otsu comparison
+- [ ] Photobleaching correction
+- [ ] Batch processing
+- [ ] GUI / Napari plugin

@@ -1,65 +1,28 @@
 # FociPy User Guide
-This document provides step-by-step instructions on how to set up the environment, prepare your data, and run the FociPy analysis pipeline.
 
-## 1. Installation & Setup
-Before running the program, ensure you have Python 3.8+ installed.
+> This document will contain usage instructions once the pipeline is implemented.
+> For now it outlines the planned workflow.
 
-Clone the repository: 
-```bash 
-git clone [https://github.com/stanuch/focipy](https://github.com/yourusername/focipy)
-cd focipy
-```
+## 1. Installation
 
-Install dependencies: 
-```bash
-pip install -r requirements.txt
-```
+<!-- Describe conda setup + pip install -e . -->
 
 ## 2. Data Preparation
 
-FociPy requires a specific directory structure to recognize experiment datasets correctly.
+<!-- Describe expected file format (.lif / .tif), directory structure, and coordinates CSV -->
 
-**Rule**: Place your raw microscopy images in the data/raw/ folder. Create a subfolder for each experiment.
+## 3. Configuration
 
-Directory Structure Example: 
-```text
-focipy/
-└── data/
-    └── raw/
-        ├── experiment_01_UV/       <-- Your Experiment Name
-        │   ├── image_001.tif
-        │   ├── image_002.tif
-        │   └── ...
-        └── experiment_02_Control/  <-- Another Experiment
-            ├── img_A.png
-            └── ...
-```
+<!-- Describe how to copy default_config.yaml and what parameters to adjust -->
 
-Note: Supported image formats currently include: .tif, .png, .jpg.
+## 4. Running the Pipeline
 
-## 3. Running the Analysis
+<!-- Describe CLI commands: python -m focipy run --input ... --output ... -->
 
-Navigate to the project root directory in your terminal. The program will ask for the Experiment Name. Enter the exact name of the folder you created in data/raw/. The program will now process all images found in data/raw/experiment_01_UV/.
+## 5. Output Structure
 
-## 4. Results & Output
+<!-- Describe what files are generated: kinetics.csv, summary.csv, QC images, metadata JSON -->
 
-Once the processing is complete, results are saved automatically to the data/processed/ directory.
+## 6. Troubleshooting
 
-Output Structure: 
-```text
-data/
-└── processed/
-    └── experiment_01_UV_processed/
-        ├── 001_experiment_01_UV.tif    <-- Processed Image / Mask
-        ├── 002_experiment_01_UV.tif
-        └── results.csv                 <-- (If you have stats)
-```
-
-File Naming Convention
-Processed files are renamed for consistency: [original_index]_[experiment_name].[extension]
-
-## 5. Troubleshooting
-
-- "Experiment not found" error: Check that the folder name in data/raw/ matches exactly what you typed (case-sensitive).
-
-- Images not processed: Ensure your image extensions are supported by the script.
+<!-- Fill in as issues are discovered during development and testing -->

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "focipy"
+version = "0.3.0"
+description = "Automated kinetics analysis of protein recruitment at DNA damage sites."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scikit-image>=0.21",
+    "scipy>=1.11",
+    "tifffile>=2023.7",
+    "readlif>=0.6",
+    "matplotlib>=3.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+cellpose = ["cellpose>=3.0"]
+napari = ["napari[all]>=0.4"]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+focipy = "focipy.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,58 +1,23 @@
 # Data Directory
 
-This directory contains microscopy image data used for XRCC1 foci analysis.
+> Do not commit raw microscopy files to Git — they are too large.
+> Use `.gitignore` to exclude them. Consider Zenodo or institutional storage for sharing.
 
-## Directory Structure
+## Structure
 
 ```
 data/
-├── raw/        # Original, unprocessed fluorescence microscopy images
-└── processed/  # Analysis outputs (segmented nuclei, detected foci, etc.)
+├── raw/          # Original timelapse files from the microscope (.lif)
+└── processed/    # Reserved for any intermediate outputs (not used yet)
 ```
 
-## Raw Data (`raw/`)
+## Raw Data
 
-### Expected Format
-- **File types**: `.tif`, `.tiff`, `.png`, `.nd2`, or other microscopy formats
-- **Channels**: Multi-channel images with separate channels for:
-  - DAPI (nuclear stain)
-  - XRCC1 (protein of interest)
-  - (Optional) Additional markers
-- **Bit depth**: 16-bit recommended for fluorescence microscopy
+<!-- Describe your data here as you start experiments -->
+<!-- Expected: Leica .lif timelapse files with DAPI + GFP-XRCC1 channels -->
+<!-- Optionally: coordinates.csv with laser hit positions (nucleus_label, x, y) -->
 
-### Naming Convention
-Use descriptive filenames that include metadata:
-```
-[experiment]_[condition]_[replicate]_[timepoint].[ext]
+## Naming Convention
 
-Examples:
-- exp001_control_rep1_t0.tif
-- exp001_UV_100J_rep1_t30min.tif
-- exp002_laser_50mW_rep2_t1h.tif
-```
-
-### Metadata
-Consider including a `raw/metadata.csv` with:
-- Filename
-- Experimental condition (dose, treatment, etc.)
-- Acquisition date
-- Microscope settings (exposure, magnification, etc.)
-- Replicate number
-
-## Processed Data (`processed/`)
-
-This directory will contain analysis outputs:
-- **Segmentation masks**: `*_nuclei_mask.tif`
-- **Foci detections**: `*_foci_mask.tif`
-- **Visualizations**: `*_overlay.png`
-
-## Important Notes
-
-> [!WARNING]
-> **Do not commit large raw image files to Git!** Use `.gitignore` or consider external data storage (e.g., institutional server, Zenodo, OSF).
-
-> [!TIP]
-> For reproducibility, document:
-> - Source of images (instrument, lab, collaborator)
-> - Preprocessing steps applied before analysis
-> - Any manual curation or exclusions
+<!-- Define your naming convention once you start acquiring data -->
+<!-- Example: YYYYMMDD_dose_XX_cellYY.lif -->

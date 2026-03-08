@@ -1,10 +1,11 @@
 """Quantification module for FociPy.
 
-Per-nucleus metrics: foci count, intensity statistics,
-area measurements, and density calculations.
+Extracts summary statistics from kinetic curves:
+half-time of recruitment (t_half), maximum intensity (I_max),
+plateau level, and ROI drift metrics.
 """
 
 # TODO: Implement the following:
-# - quantify_nuclei(labeled_nuclei, xrcc1_channel, foci_coords, pixel_size_um) -> DataFrame
-# - filter_nuclei(df, min_area, max_area, exclude_border, min_solidity) -> DataFrame
-# - summarize_per_image(df) -> DataFrame
+# - compute_kinetic_stats(df) -> dict  (I_max, t_max_s, t_half_s, I_plateau, drift stats)
+# - aggregate_experiment(cell_stats, cell_ids) -> DataFrame  (one row per cell)
+# - _compute_t_half(time_s, i_norm, i_max) -> float  (linear interpolation)

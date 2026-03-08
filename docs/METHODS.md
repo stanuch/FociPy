@@ -1,31 +1,37 @@
 # Methodology
 
-This document describes the image processing pipeline and algorithms used in the FociPy project for the analysis of XRCC1 foci.
+> This document will describe the image processing pipeline and algorithms used by FociPy.
+> Fill in each section as you implement the corresponding module. Include final parameter values,
+> algorithm choices, and references to relevant literature.
 
-> **Note:** Algorithm parameters are subject to optimization during development.
+## 1. Data Loading & Metadata Extraction
 
-## 1. Image Preprocessing
+<!-- Module: io_utils.py — describe .lif loading, what metadata you extract, and how -->
 
-Before detection, raw images undergo preprocessing to reduce noise and normalize signal intensity.
+## 2. Image Preprocessing
 
-- [TBD]
+<!-- Module: preprocessing.py — describe which filters you apply and why, with final σ / radius values -->
 
-## 2. Nuclear Segmentation
+## 3. Nuclear Segmentation
 
-The objective of this stage is to generate binary masks that separate cell nuclei from the background.
+<!-- Module: segmentation.py — describe Otsu+Watershed pipeline step by step; optionally compare with Cellpose -->
 
-- [TBD]
+## 4. ROI Tracking & Drift Correction
 
-## 3. XRCC1 Foci Detection
+<!-- Module: kinetics.py — describe how you place the initial ROI, how center-of-mass tracking works -->
 
-Signal analysis within the defined nuclear masks.
+## 5. Intensity Measurement & Normalization
 
-- [TBD]
+<!-- Module: kinetics.py — describe I_foci, I_nuc, I_bg measurement; the normalization formula and its rationale -->
 
-## 4. Quantification Metrics
+## 6. Quantification Metrics
 
-- [TBD]
+<!-- Module: quantification.py — define t_half, I_max, I_plateau and how you compute them -->
 
-## 5. Libraries and Environment
+## 7. Output & Reproducibility
 
-- [TBD]
+<!-- Module: reporting.py — describe what files are exported and how reproducibility is ensured (hashes, config) -->
+
+## 8. Libraries & Environment
+
+<!-- List final library versions used in analysis -->

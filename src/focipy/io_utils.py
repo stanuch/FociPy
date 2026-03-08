@@ -1,8 +1,8 @@
 """Image I/O utilities for FociPy.
 
-Functions for loading and saving microscopy images,
-parsing experiment metadata from filenames, and
-managing directory structures.
+Functions for loading microscopy timelapse data (.lif, .tif, .ome.tif),
+extracting experiment metadata (pixel size, time interval, ROI coordinates),
+computing file hashes for audit trail, and managing directory structures.
 """
 
 import logging
@@ -13,7 +13,18 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # Supported microscopy image formats
-SUPPORTED_EXTENSIONS = {".tif", ".tiff", ".png", ".czi", ".nd2"}
+SUPPORTED_EXTENSIONS = {".lif", ".tif", ".tiff"}
+
+# TODO: Add the following functions:
+# - load_lif(path) -> (np.ndarray, dict)         — Load Leica .lif with readlif
+# - load_ome_tiff(path) -> (np.ndarray, dict)    — Load OME-TIFF with tifffile + OME-XML parsing
+# - extract_metadata(path) -> dict                — Extract pixel_size_nm, time_interval_s, etc.
+# - compute_file_hash(path) -> str                — SHA-256 hash for audit trail
+#
+# Modify load_image() to:
+# - Return tuple[np.ndarray, dict] instead of just np.ndarray
+# - Dispatch to format-specific loaders based on file extension
+# - Handle timelapse arrays with shape (T, C, Y, X)
 
 
 def load_image(path: Path) -> np.ndarray:

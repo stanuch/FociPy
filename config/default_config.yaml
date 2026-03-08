@@ -1,37 +1,34 @@
-# Default configuration for the FociPy analysis pipeline.
-# Copy this file and adjust parameters for your specific experiment.
+# FociPy – Default Pipeline Configuration
+# Copy this file and adjust parameters for your experiment.
 
-# --- Nuclear Segmentation ---
-segmentation:
-  method: cellpose           # Options: "cellpose", "otsu_watershed"
-
-  # Cellpose parameters (used when method = "cellpose")
-  cellpose_model: nuclei     # Pretrained model type
-  cellpose_diameter: null     # Nucleus diameter in pixels (null = auto-detect)
-
-  # Otsu + Watershed parameters (used when method = "otsu_watershed")
-  gaussian_sigma: 1.5        # Gaussian blur sigma for noise reduction
-  min_distance: 20           # Min distance between nuclei centers (px)
-
-# --- XRCC1 Foci Detection ---
-detection:
-  method: dog                # Options: "dog", "log", "local_maxima"
-
-  # Difference of Gaussians parameters
-  sigma_low: 1.0             # ~0.5x expected focus radius (px)
-  sigma_high: 3.0            # ~1.5-2x expected focus radius (px)
-
-  # Detection threshold and spacing
-  threshold: 0.05            # Min normalized intensity for a detected focus
-  min_distance: 5            # Min distance between foci (px)
-
-# --- Nucleus Filtering ---
-filtering:
-  min_area_um2: 30.0         # Exclude nuclei smaller than this (debris)
-  max_area_um2: 300.0        # Exclude nuclei larger than this (clumps)
-  exclude_border: true       # Exclude nuclei touching image edges
-  min_solidity: 0.8          # Exclude irregularly shaped nuclei
-  max_eccentricity: 0.95     # Exclude very elongated objects
-
-# --- Microscopy Metadata ---
-pixel_size_um: 0.325         # Pixel size in micrometers (from microscope)
+# TODO:
+# This file should mirror the fields in the PipelineConfig dataclass.
+# Example structure:
+#
+# experiment_name: ""
+# microscope_model: "Leica TCS SP5 FLIM"
+# objective: "HCX PL APO 63x/1.40 OIL"
+# laser_wavelength_nm: 488
+# dapi_channel: 0
+# protein_channel: 1
+# time_interval_s: null  # null = read from metadata
+#
+# segmentation:
+#   method: "otsu_watershed"
+#   gaussian_sigma: 2.0
+#   min_area_px: 500
+#   max_area_px: 50000
+#
+# kinetics:
+#   roi_radius_px: 15
+#   drift_correction: true
+#   background_method: "outside_nuclei"
+#
+# preprocessing:
+#   apply_gaussian: true
+#   gaussian_sigma: 1.0
+#
+# output:
+#   export_qc_images: true
+#   export_kinetics_csv: true
+#   qc_dpi: 150
