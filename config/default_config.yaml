@@ -1,34 +1,28 @@
-# FociPy – Default Pipeline Configuration
-# Copy this file and adjust parameters for your experiment.
+# FociPy — default pipeline configuration
 
-# TODO:
-# This file should mirror the fields in the PipelineConfig dataclass.
-# Example structure:
-#
-# experiment_name: ""
-# microscope_model: "Leica TCS SP5 FLIM"
-# objective: "HCX PL APO 63x/1.40 OIL"
-# laser_wavelength_nm: 488
-# dapi_channel: 0
-# protein_channel: 1
-# time_interval_s: null  # null = read from metadata
-#
-# segmentation:
-#   method: "otsu_watershed"
-#   gaussian_sigma: 2.0
-#   min_area_px: 500
-#   max_area_px: 50000
-#
-# kinetics:
-#   roi_radius_px: 15
-#   drift_correction: true
-#   background_method: "outside_nuclei"
-#
-# preprocessing:
-#   apply_gaussian: true
-#   gaussian_sigma: 1.0
-#
-# output:
-#   export_qc_images: true
-#   export_kinetics_csv: true
-#   qc_dpi: 150
+microscope_model: "Leica TCS SP5 FLIM"
+objective: "HCX PL APO 63x/1.40 OIL"
+laser_wavelength_nm: 488
+dapi_channel: 0
+protein_channel: 1
+time_interval_s: null  # null = read from file metadata
+
+segmentation:
+  method: "otsu_watershed"
+  gaussian_sigma: 2.0
+  min_area_px: 500
+  max_area_px: 50000
+
+kinetics:
+  roi_radius_px: 15
+  drift_correction: true
+  background_method: "outside_nuclei"
+
+preprocessing:
+  apply_gaussian: true
+  gaussian_sigma: 1.0
+
+output:
+  export_qc_images: true
+  export_kinetics_csv: true
+  qc_dpi: 150

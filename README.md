@@ -2,83 +2,67 @@
   <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="500">
 </p>
 
-**FociPy** is an open-source Python pipeline for the automated analysis of DNA repair protein recruitment kinetics at laser-induced damage sites. It processes timelapse fluorescence microscopy data from microirradiation experiments, extracts normalized intensity curves, and exports publication-ready quantitative results.
-
-Designed for analyzing **XRCC1** (single-strand break marker) and **53BP1** (double-strand break marker) accumulation in HeLa cells, but the modular architecture allows adaptation to other fluorescently-tagged repair proteins.
-
-_This software is being developed as part of a master's thesis in Molecular and Cellular Biophysics at the Jagiellonian University (Faculty of Biochemistry, Biophysics and Biotechnology)._
-
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![Conda](https://img.shields.io/badge/Environment-Conda-green?logo=anaconda&logoColor=white)
 ![Stage](https://img.shields.io/badge/Stage-Architecture_Design-blue)
 ![Last Commit](https://img.shields.io/github/last-commit/stanuch/FociPy)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![GitHub repo size](https://img.shields.io/github/repo-size/stanuch/FociPy)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-> [!WARNING]
-> **UNDER DEVELOPMENT – NOT YET USABLE**
->
-> FociPy is currently in the architecture design phase. The module structure is defined,
-> but core algorithms are not yet implemented. Do not use for quantitative analysis.
+---
 
-## Scientific context
+**FociPy** is a Python pipeline for automated analysis of DNA repair protein recruitment kinetics at laser-induced damage sites. It takes timelapse fluorescence microscopy data from microirradiation experiments, extracts normalized intensity curves, and exports quantitative results ready for publication.
 
-In microirradiation experiments, a focused laser beam (488 nm) induces localized DNA damage within a single cell nucleus. Fluorescently-tagged repair proteins (e.g. GFP-XRCC1) are recruited to the damage site, forming a visible accumulation ("focus") that can be tracked over time. Traditional analysis in ImageJ/FIJI relies on manual ROI selection — a process that is subjective, time-consuming, and difficult to scale. FociPy will be a fully automated extraction of recruitment kinetics from raw microscopy files, using the normalization formula:
+The pipeline is designed around **XRCC1** (single-strand break marker) and **53BP1** (double-strand break marker) accumulation in HeLa cells, but the modular architecture should work for other fluorescently-tagged repair proteins as well.
+
+> **Note:** FociPy is under active development — the modules structure is defined but core algorithms are not yet implemented. This project is part of a master's thesis in Molecular and Cellular Biophysics at the Jagiellonian University (Faculty of Biochemistry, Biophysics and Biotechnology).
+
+## Why?
+
+In microirradiation experiments, a focused 488 nm laser beam induces localized DNA damage inside a single cell nucleus. Fluorescently-tagged repair proteins (e.g. GFP-XRCC1) accumulate at the damage site, forming a visible focus that can be tracked over time.
+
+The standard approach — manual ROI selection in ImageJ/FIJI — is subjective, slow, and doesn't scale well across dozens of cells and conditions. FociPy automates the entire extraction of recruitment kinetics, from raw microscopy files to normalized curves and summary statistics.
+
+The core normalization:
 
 $$I_{norm}(t) = \frac{I_{foci}(t) - I_{bg}}{I_{nuc}(t) - I_{bg}}$$
 
-where:
+corrects for variable expression levels (transient transfection) and photobleaching.
 
-- $I_{foci}(t)$ — mean intensity within the repair focus ROI at time $t$
-- $I_{nuc}(t)$ — mean intensity of the entire nucleus (reference pool)
-- $I_{bg}$ — mean background intensity (outside all nuclei)
+## Installation
 
-This normalization corrects for variable expression levels (transient transfection) and photobleaching effects.
+```bash
+# Clone the repository
+git clone https://github.com/stanuch/FociPy.git
+cd FociPy
 
-## Project goals
+# Create conda environment from environment.yml
+conda env create -f environment.yml
+conda activate focipy
 
-- Automated segmentation of cell nuclei from DAPI/Hoechst-stained timelapse images
-- Tracking of laser-induced repair foci through timelapse sequences (center-of-mass drift correction)
-- Extraction of normalized recruitment kinetics curves
-- Quantitative analysis: half-recruitment time ($t_{1/2}$), maximum intensity ($I_{max}$), plateau level
-- Investigation of dose-dependent DNA damage response (488 nm laser power vs. recruitment dynamics)
-- Batch processing with full audit trail (source file hashes, pipeline parameters, QC images)
+# Install in editable mode
+pip install -e .
+```
 
-## Experimental setup
+## Experimental context
 
 | Parameter            | Value                                |
 | -------------------- | ------------------------------------ |
 | **Cell line**        | HeLa (transient transfection)        |
-| **Markers**          | RFP-XRCC1 (SSB), GFP-53BP1 (DSB)     |
-| **Microscope**       | Leica TCS SP5 FLIM                   |
-| **Objective**        | HCX PL APO 63x/1.40 OIL              |
-| **Damage induction** | Point microirradiation, 488 nm laser |
-| **Nuclear stain**    | DAPI / Hoechst                       |
-| **Data format**      | .tif                                 |
+| **Markers**          | RFP-XRCC1 (SSB), GFP-53BP1 (DSB)   |
+| **Microscope**       | Leica TCS SP5 FLIM                  |
+| **Objective**        | HCX PL APO 63×/1.40 OIL             |
+| **Damage induction** | Point microirradiation, 488 nm      |
+| **Data format**      | .tif                          |
 
-## Module overview
+## Documentation
 
-| Module              | Purpose                                                       |
-| ------------------- | ------------------------------------------------------------- |
-| `config.py`         | Pipeline parameters (dataclass + YAML)                        |
-| `io_utils.py`       | Image loading (.lif, .tif), metadata extraction, file hashing |
-| `preprocessing.py`  | Noise reduction, background subtraction                       |
-| `segmentation.py`   | Nuclear segmentation (Otsu+Watershed, Cellpose)               |
-| `kinetics.py`       | ROI tracking, intensity measurement, normalization            |
-| `quantification.py` | Kinetic curve statistics (t_half, I_max)                      |
-| `reporting.py`      | CSV/JSON export, experiment metadata, audit trail             |
-| `visualization.py`  | Kinetics plots, segmentation overlays, QC panels              |
-| `pipeline.py`       | Orchestration of the full workflow                            |
+- [METHODS.md](docs/METHODS.md) — image processing pipeline and algorithms
+- [USAGE.md](docs/USAGE.md) — user guide (planned)
+- [ROADMAP.md](docs/ROADMAP.md) — development phases and progress
+- [CHANGELOG.md](docs/CHANGELOG.md) — version history
 
-## Current status
+## License
 
-- Project stage: **architecture design**
-- Module structure: **defined**
-- Core implementation: **not started**
-- Validation: **not started**
-
-## Disclaimer
-
-This project is a research prototype developed for academic purposes (master's thesis).
-No guarantees are made regarding correctness, completeness, or suitability of the results at the current development stage.
-
-**Detailed documentation, including usage instructions (USAGE.md), methodology (METHODS.md), and changelogs (CHANGELOG.md), can be found in the [`docs/`](docs/) directory.**
+[MIT](LICENSE) © 2026 Aleksander Stanuch
