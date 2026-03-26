@@ -10,8 +10,6 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/stanuch/FociPy)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
----
-
 **FociPy** is a Python pipeline for automated analysis of DNA repair protein recruitment kinetics at laser-induced damage sites. It takes timelapse fluorescence microscopy data from microirradiation experiments, extracts normalized intensity curves, and exports quantitative results ready for publication.
 
 The pipeline is designed around **XRCC1** (single-strand break marker) and **53BP1** (double-strand break marker) accumulation in HeLa cells, but the modular architecture should work for other fluorescently-tagged repair proteins as well.
