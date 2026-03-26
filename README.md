@@ -8,10 +8,11 @@ Designed for analyzing **XRCC1** (single-strand break marker) and **53BP1** (dou
 
 _This software is being developed as part of a master's thesis in Molecular and Cellular Biophysics at the Jagiellonian University (Faculty of Biochemistry, Biophysics and Biotechnology)._
 
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![Conda](https://img.shields.io/badge/Environment-Conda-green?logo=anaconda&logoColor=white)
+![Stage](https://img.shields.io/badge/Stage-Architecture_Design-blue)
+![Last Commit](https://img.shields.io/github/last-commit/stanuch/FociPy)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=Python)
-![Stage](https://img.shields.io/badge/project-architecture_design-orange)
-![Last Commit](https://img.shields.io/github/last-commit/stanuch/focipy)
 
 > [!WARNING]
 > **UNDER DEVELOPMENT – NOT YET USABLE**
@@ -47,12 +48,12 @@ This normalization corrects for variable expression levels (transient transfecti
 | Parameter            | Value                                |
 | -------------------- | ------------------------------------ |
 | **Cell line**        | HeLa (transient transfection)        |
-| **Markers**          | GFP-XRCC1 (SSB), GFP-53BP1 (DSB)     |
+| **Markers**          | RFP-XRCC1 (SSB), GFP-53BP1 (DSB)     |
 | **Microscope**       | Leica TCS SP5 FLIM                   |
 | **Objective**        | HCX PL APO 63x/1.40 OIL              |
 | **Damage induction** | Point microirradiation, 488 nm laser |
 | **Nuclear stain**    | DAPI / Hoechst                       |
-| **Data format**      | Leica .lif (native)                  |
+| **Data format**      | .tif                                 |
 
 ## Module overview
 
@@ -67,17 +68,6 @@ This normalization corrects for variable expression levels (transient transfecti
 | `reporting.py`      | CSV/JSON export, experiment metadata, audit trail             |
 | `visualization.py`  | Kinetics plots, segmentation overlays, QC panels              |
 | `pipeline.py`       | Orchestration of the full workflow                            |
-
-## Tech stack
-
-| Category                    | Tools                              |
-| --------------------------- | ---------------------------------- |
-| **Core**                    | Python 3.10+, NumPy, Pandas, SciPy |
-| **Image processing**        | scikit-image, tifffile             |
-| **Leica file support**      | readlif                            |
-| **Segmentation (optional)** | Cellpose                           |
-| **Visualization**           | Matplotlib, Napari (QC)            |
-| **Configuration**           | PyYAML, dataclasses                |
 
 ## Current status
 
