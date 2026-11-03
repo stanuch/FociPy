@@ -1,7 +1,23 @@
 name: focipy
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.11
-  - ipykernel=7.2.0
+  - numpy>=1.24
+  - scipy>=1.11
+  - pandas>=2.0
+  - scikit-image>=0.21
+  - tifffile>=2023.7
+  - matplotlib>=3.7
+  - seaborn>=0.13
+  - pyyaml>=6.0
+  - tqdm>=4.66
+  - ipykernel>=6.29
+  - jupyterlab>=4.0
+  - pytest>=7.4
+  - ruff>=0.3
+  - pip
+  - pip:
+      - readlif>=0.6.5
+      - roifile>=2024.1.10
+      - -e .
