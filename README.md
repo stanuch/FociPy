@@ -52,12 +52,12 @@ pip install -e .
 | **Microscope**       | Leica TCS SP5 FLIM                  |
 | **Objective**        | HCX PL APO 63×/1.40 OIL             |
 | **Damage induction** | Point microirradiation, 488 nm      |
-| **Data format**      | .tif                          |
+| **Data format**      | .lif / .tif                         |
 
 ## Documentation
 
 - [METHODS.md](docs/METHODS.md) — image processing pipeline and algorithms
-- [USAGE.md](docs/USAGE.md) — user guide (planned)
+- [USAGE.md](docs/USAGE.md) — user guide and CLI reference
 - [ROADMAP.md](docs/ROADMAP.md) — development phases and progress
 - [CHANGELOG.md](docs/CHANGELOG.md) — version history
 

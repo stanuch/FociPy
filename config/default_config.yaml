@@ -1,5 +1,6 @@
 # FociPy — default pipeline configuration
 
+experiment_name: "default_experiment"
 microscope_model: "Leica TCS SP5 FLIM"
 objective: "HCX PL APO 63x/1.40 OIL"
 laser_wavelength_nm: 488
@@ -21,6 +22,7 @@ kinetics:
 preprocessing:
   apply_gaussian: true
   gaussian_sigma: 1.0
+  apply_median: false
 
 output:
   export_qc_images: true

@@ -5,6 +5,29 @@ All notable changes to the **FociPy** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-09
+
+### Added
+
+- **YAML configuration & provenance (`config.py`)**:
+  - Implemented `PipelineConfig` and typed sub-dataclasses (`SegmentationConfig`, `KineticsConfig`, `PreprocessingConfig`, `OutputConfig`) with `from_yaml`, `to_yaml`, `from_dict`, and `to_dict` serialization for reproducible analysis runs.
+- **Fast binary Leica `.lif` XML parser & loader (`io_utils.py`)**:
+  - `extract_lif_xml`: reads only the UTF-16-LE XML header directly from binary `.lif` files in milliseconds without loading pixel data.
+  - `parse_lif_metadata`: extracts spatial calibration (`pixel_size_um`, `fov_um`), hardware/optical settings (`zoom`, `magnification`, `pinhole_airy`, `scan_speed_hz`, `line_average`, `detector_gain_v`, `emission_band_nm`, imaging & bleach laser wavelengths and powers), frame timestamps from 64-bit Windows `FILETIME` ticks, pre-bleach frame counts, and laser microirradiation coordinates (`LaserCoordinate`).
+  - Automatic concatenation of multi-phase FRAP acquisitions (`FRAP Series` + `FRAP Pb2 Series` + `FRAP Pb3 Series`) along the time axis `T` (`merge_pb_series=True`), including filtering of empty placeholder `Pb2` series from aborted runs.
+  - Automatic detection and filtering of uncalibrated screenshot series (`Snapshot`) while linking them to their parent experiments via `associated_snapshots`.
+  - `load_lif_series`: loads and concatenates `(T, C, Y, X)` fluorescence arrays across merged FRAP sub-series by index or name.
+  - `catalog_lif_files`: recursively scans `.lif` directories (e.g. `data/raw`) and exports a 38-column metadata inventory to CSV (`data/processed/raw_series_catalog.csv`).
+- **Interactive visualization (`visualization.py`)**:
+  - `view_in_napari` and `view_in_matplotlib`: interactive timelapse viewers with overlaid laser target crosshairs (`+`), circular ROI measurement regions, and real-time phase status (`PRE-BLEACH`, `POST-BLEACH (Pb1)`, `POST-BLEACH (Pb2)`).
+  - `list_lif_series` and `view_lif_series` high-level inspection helpers.
+- **Command-line interface (`__main__.py`)**:
+  - Added `focipy info`, `focipy view`, `focipy catalog`, and `focipy help` subcommands with English bioinformatics-style manual and `--version` support.
+- **Documentation**:
+  - Documented `.lif` binary parsing, coordinate transformations, multi-phase FRAP merging, and configuration provenance in `docs/METHODS.md` and `docs/USAGE.md`.
+
+---
+
 ## [0.3.1] - 2026-03-27
 
 ### Changed
