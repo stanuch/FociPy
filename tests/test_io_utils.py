@@ -20,7 +20,6 @@ RAW_12UJ_PATH = Path("data/raw/XRCC1/2026_02_26/2026_02_26 HeLa mRFP-XRCC1 12uJ.
 
 
 def _build_synthetic_lif_bytes(xml_text: str) -> bytes:
-    """Pomocnicza funkcja budująca minimalny binarny nagłówek .lif z podanym XML."""
     xml_bytes = xml_text.encode("utf-16-le")
     xml_chars = len(xml_bytes) // 2
     header = struct.pack("<iibi", 0x70, len(xml_bytes) + 5, 0x2A, xml_chars)
@@ -28,7 +27,6 @@ def _build_synthetic_lif_bytes(xml_text: str) -> bytes:
 
 
 def test_parse_synthetic_lif_frap_and_pb2_merge(tmp_path: Path) -> None:
-    """Testuje parsowanie XML .lif, punktów BLEACH_POINT i sklejanie FRAP + Pb2."""
     sample_xml = (
         '<?xml version="1.0"?>'
         '<LMSDataContainerHeader Version="2">'
@@ -110,7 +108,6 @@ def test_parse_synthetic_lif_frap_and_pb2_merge(tmp_path: Path) -> None:
 
 
 def test_tiff_io_and_hash(tmp_path: Path) -> None:
-    """Sprawdza zapis i odczyt pliku .tif oraz obliczanie sumy kontrolnej SHA-256."""
     arr = np.zeros((4, 2, 32, 32), dtype=np.uint8)
     arr[:, 0, 10:20, 10:20] = 200
     tif_path = tmp_path / "sample.tif"
@@ -128,7 +125,6 @@ def test_tiff_io_and_hash(tmp_path: Path) -> None:
     reason="Pominięto test integracyjny: brak pliku surowego w data/raw/",
 )
 def test_real_lif_file_parsing_and_loading() -> None:
-    """Test integracyjny na prawdziwym pliku .lif z eksperymentu XRCC1 12uJ."""
     series_list = parse_lif_metadata(
         RAW_12UJ_PATH, only_timelapse=True, merge_pb_series=True
     )

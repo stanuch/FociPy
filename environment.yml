@@ -20,4 +20,5 @@ dependencies:
   - pip:
       - readlif>=0.6.5
       - roifile>=2024.1.10
+      - "napari[all]>=0.4"
       - -e .

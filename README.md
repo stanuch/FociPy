@@ -2,64 +2,172 @@
   <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="500">
 </p>
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
-![Conda](https://img.shields.io/badge/Environment-Conda-green?logo=anaconda&logoColor=white)
-![Stage](https://img.shields.io/badge/Stage-Architecture_Design-blue)
-![Last Commit](https://img.shields.io/github/last-commit/stanuch/FociPy)
-![License](https://img.shields.io/badge/License-MIT-green)
-![GitHub repo size](https://img.shields.io/github/repo-size/stanuch/FociPy)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+<p>
+  <img src="https://img.shields.io/badge/Version-0.4.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Environment-Conda-44A833?logo=anaconda&logoColor=white" alt="Conda">
+  <img src="https://img.shields.io/badge/Format-Leica_.lif_%7C_TIFF-orange" alt="Formats">
+  <img src="https://img.shields.io/badge/Viewer-Napari-0092ff" alt="Napari">
+  <img src="https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white" alt="Pytest">
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+</p>
 
-**FociPy** is a Python pipeline for automated analysis of DNA repair protein recruitment kinetics at laser-induced damage sites. It takes timelapse fluorescence microscopy data from microirradiation experiments, extracts normalized intensity curves, and exports quantitative results ready for publication.
+> [!NOTE]
+> **Work in Progress**: FociPy is actively developed for an MSc thesis. Data ingestion, metadata parsing, and visualization tools are operational. Segmentation and automated recruitment kinetics extraction are under active development. 
 
-The pipeline is designed around **XRCC1** (single-strand break marker) and **53BP1** (double-strand break marker) accumulation in HeLa cells, but the modular architecture should work for other fluorescently-tagged repair proteins as well.
+**FociPy** is a Python bioinformatics and bioimage analysis pipeline for quantifying the spatio-temporal dynamics of DNA repair protein accumulation (foci formation) following localized laser microirradiation in live cells.
 
-> **Note:** FociPy is under active development — the modules structure is defined but core algorithms are not yet implemented. This project is part of a master's thesis in Molecular and Cellular Biophysics at the Jagiellonian University (Faculty of Biochemistry, Biophysics and Biotechnology).
+Designed around **mRFP-XRCC1** (single-strand break repair scaffold) and **mCherry-53BP1** (double-strand break signaling factor) in HeLa cells, FociPy reads raw Leica confocal `.lif` and `.tif` timelapse files, extracts hardware and bleach-point metadata directly from binary XML headers, stitches multi-phase FRAP timelines, and provides interactive visualization and quantitative kinetic curves.
 
-## Why?
 
-In microirradiation experiments, a focused 488 nm laser beam induces localized DNA damage inside a single cell nucleus. Fluorescently-tagged repair proteins (e.g. GFP-XRCC1) accumulate at the damage site, forming a visible focus that can be tracked over time.
+## Why FociPy?
 
-The standard approach — manual ROI selection in ImageJ/FIJI — is subjective, slow, and doesn't scale well across dozens of cells and conditions. FociPy automates the entire extraction of recruitment kinetics, from raw microscopy files to normalized curves and summary statistics.
+In laser microirradiation experiments, a focused $488\text{ nm}$ laser pulse induces localized DNA lesions inside a cell nucleus. Fluorescently tagged repair proteins rapidly nucleate at the damage site, forming a repair focus whose intensity evolves over time.
 
-The core normalization:
+Standard manual analysis in ImageJ/FIJI requires hand-drawing ROIs frame-by-frame, loses Leica FRAP protocol metadata, struggles with nuclear drift over 20-minute recordings, and does not scale across dose–response datasets. **FociPy** automates this workflow while preserving a complete audit trail of optical and hardware parameters.
 
-$$I_{norm}(t) = \frac{I_{foci}(t) - I_{bg}}{I_{nuc}(t) - I_{bg}}$$
+To account for cell-to-cell expression variability (transient transfection) and imaging photobleaching, fluorescence intensity is normalized against the whole-nucleus signal at each timepoint:
 
-corrects for variable expression levels (transient transfection) and photobleaching.
+$$I_{\text{norm}}(t) = \frac{I_{\text{foci}}(t) - I_{\text{bg}}(t)}{I_{\text{nuc}}(t) - I_{\text{bg}}(t)}$$
+
+## Pipeline Architecture
+
+```mermaid
+flowchart LR
+    A["Raw Leica .lif / .tif"] --> B["Binary & XML Parser\n(io_utils.py)"]
+    B --> C["Multi-Phase Stitching\n(FRAP Pb1 + Pb2)"]
+    B --> D["Laser Target Extraction\n(BLEACH_POINT ROIs)"]
+    C --> E["Interactive Napari HUD\n& Dataset CSV Catalog"]
+    D --> E
+    C --> F["Nuclear Segmentation\n& Drift Correction"]
+    D --> F
+    F --> G["Normalized Kinetics\nI_norm(t)"]
+    G --> H["Biophysical Metrics\n(t_1/2, I_max, τ_on)"]
+```
+
+## Key Features
+
+* **Fast Native Leica `.lif` Header Parser** — Extracts UTF-16-LE XML metadata directly from binary `.lif` headers in milliseconds without loading gigabytes of pixel data into RAM.
+* **Automatic Laser Target (`BLEACH_POINT`) Extraction** — Reads exact microirradiation coordinates (`ROI1..ROIn`), pulse duration ($\text{ms}$), AOTF laser power ($\%$), and pre-bleach frame counts directly from Leica FRAP Wizard metadata, converting physical scanner offsets ($\text{m}$) into image pixel coordinates $(x_{\text{px}}, y_{\text{px}})$.
+* **Multi-Phase Timeline Stitching (`FRAP Series` + `FRAP Pb2/Pb3`)** — Automatically merges fast early-phase recordings (*FlyMode* `Pb1`) and slower late-phase recordings (`Pb2`) into a single continuous 4D `(T, C, Y, X)` array and unified time axis $t$.
+* **Experiment-Wide Cataloging (`focipy catalog`)** — Recursively scans `data/raw/` and compiles a master CSV manifest containing resolution, field of view ($\mu\text{m}$), pixel scale, frame intervals, PMT detector gain ($\text{V}$), pinhole ($\text{Airy}$), zoom, emission bands, and irradiated cell counts.
+* **Interactive Microscopy Viewer (`focipy view`)** — Opens timelapse series in **Napari** (complete with a live technical HUD overlay, physical scale bar in $\mu\text{m}$, green laser crosshairs `+`, and circular ROI overlays) or falls back to a built-in interactive **Matplotlib** frame-slider viewer.
+* **Reproducible Configuration & Audit Trail** — Centralized dataclass configuration backed by YAML (`config/default_config.yaml`) and SHA-256 file hashing.
 
 ## Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/stanuch/FociPy.git
 cd FociPy
 
-# Create conda environment from environment.yml
+# 2. Create and activate the Conda environment (includes Napari & scientific stack)
 conda env create -f environment.yml
 conda activate focipy
 
-# Install in editable mode
-pip install -e .
+# 3. Verify installation
+focipy help
+pytest -v
 ```
 
-## Experimental context
+## Quick Start & CLI Usage
 
-| Parameter            | Value                                |
-| -------------------- | ------------------------------------ |
-| **Cell line**        | HeLa (transient transfection)        |
-| **Markers**          | RFP-XRCC1 (SSB), GFP-53BP1 (DSB)   |
-| **Microscope**       | Leica TCS SP5 FLIM                  |
-| **Objective**        | HCX PL APO 63×/1.40 OIL             |
-| **Damage induction** | Point microirradiation, 488 nm      |
-| **Data format**      | .lif / .tif                         |
+FociPy provides a command-line interface accessible via `focipy` (or `python -m focipy`):
+
+### 1. Built-in Terminal Manual (`focipy help`)
+```bash
+focipy help
+```
+
+### 2. Inspect Series & Laser Coordinates in a `.lif` File (`focipy info`)
+```bash
+focipy info "data/raw/XRCC1/2026_02_26/2026_02_26 HeLa mRFP-XRCC1 12uJ.lif" --timelapse-only
+```
+Example output:
+```text
+=== 2026_02_26 HeLa mRFP-XRCC1 12uJ.lif (18 series) ===
+   Idx | Name                           | Shape (T,C,Y,X)   | Dur [s] | Pixel [µm] | Pre | Laser ROIs
+--------------------------------------------------------------------------------------------------------
+   3+4 | 12uJ_01_02/FRAP Series02       | (25,2,512,512)    |   291.6 | 0.0601     |   3 | ROI1(296,194), ROI2(360,268)
+  9+10 | 12uJ_03/FRAP Series10          | (25,2,512,512)    |   291.3 | 0.0601     |   3 | ROI1(252,246)
+ 19+20 | 12uJ_05/FRAP Series18          | (25,2,512,512)    |   291.4 | 0.0601     |   3 | ROI1(279,231)
+```
+
+### 3. Interactive Visualization in Napari or Matplotlib (`focipy view`)
+```bash
+# Open series by index or experiment name in Napari (with live HUD & µm scale bar)
+focipy view "data/raw/XRCC1/2026_02_26/2026_02_26 HeLa mRFP-XRCC1 12uJ.lif" -s 3
+focipy view "data/raw/XRCC1/2026_02_26/2026_02_26 HeLa mRFP-XRCC1 12uJ.lif" -s "12uJ_05"
+
+# Force the lightweight Matplotlib slider viewer
+focipy view "data/raw/53BP1/2026_05_06/20260506_mCH-53BP1 HeLa.lif" -s 2 --backend matplotlib
+```
+
+### 4. Build a Full Dataset Manifest (`focipy catalog`)
+```bash
+# Scan all .lif files in data/raw/ and export a comprehensive CSV catalog
+focipy catalog
+focipy catalog data/raw --timelapse-only -o data/processed/timelapse_catalog.csv
+```
+
+## Experimental Context
+
+| Parameter | Specification |
+| :--- | :--- |
+| **Cell line** | HeLa (human cervical carcinoma, transient transfection) |
+| **Fluorescent markers** | **mRFP-XRCC1** (SSB repair), **mCherry-53BP1** (DSB repair) |
+| **Microscope system** | Leica TCS SP5 / SP4 Confocal (LAS AF) |
+| **Objective** | HCX PL APO $63\times / 1.40\text{ OIL}$ |
+| **Damage induction** | Point microirradiation ($488\text{ nm}$ laser, dose–response $8\text{–}25\ \mu\text{J}$) |
+| **Acquisition modes** | Multi-phase FRAP Wizard (`Pre` + `Pb1` + `Pb2`) & standard `xyt` / *Mark & Find* |
+| **Data formats** | Leica Image File (`.lif`), `.tif` / `.ome.tif` |
+
+## Repository Structure
+
+```text
+FociPy/
+├── config/
+│   └── default_config.yaml      # Default pipeline & optical parameters
+├── data/
+│   ├── raw/                     # Original .lif microscopy files (XRCC1/, 53BP1/, calibration/)
+│   └── processed/               # Generated CSV catalogs and extracted kinetics outputs
+├── docs/
+│   ├── CHANGELOG.md             # Version history
+│   ├── METHODS.md               # Mathematical & algorithmic documentation
+│   └── USAGE.md                 # Detailed user guide
+├── scripts/
+│   └── sorting.py               # Utility for organizing raw .lif/.maf files by protein & date
+├── src/focipy/
+│   ├── __init__.py              # Package version metadata
+│   ├── __main__.py              # CLI entry point (focipy help / info / view / catalog)
+│   ├── config.py                # Dataclass-based YAML configuration manager
+│   ├── io_utils.py              # Binary .lif XML parser, phase stitching & dataset cataloger
+│   └── visualization.py         # Interactive Napari (HUD + scale bar) & Matplotlib viewers
+├── tests/
+│   ├── test_config.py           # Configuration unit tests
+│   └── test_io_utils.py         # Synthetic & real-data .lif parser tests
+├── environment.yml              # Conda environment specification
+└── pyproject.toml               # Python package build, dependencies, pytest & Ruff config
+```
+
+## Testing & Code Quality
+
+Run the test suite and linter from the project root:
+
+```bash
+# Run unit and integration tests
+pytest -v
+
+# Check code formatting and linting rules
+ruff check src/ tests/
+```
 
 ## Documentation
 
-- [METHODS.md](docs/METHODS.md) — image processing pipeline and algorithms
-- [USAGE.md](docs/USAGE.md) — user guide and CLI reference
-- [ROADMAP.md](docs/ROADMAP.md) — development phases and progress
-- [CHANGELOG.md](docs/CHANGELOG.md) — version history
+* [METHODS.md](docs/METHODS.md) — Image processing pipeline and mathematical models
+* [USAGE.md](docs/USAGE.md) — User guide and CLI reference
+* [CHANGELOG.md](docs/CHANGELOG.md) — Version history and release notes
 
 ## License
 

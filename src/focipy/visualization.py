@@ -32,6 +32,48 @@ def _phase_label(meta: LifSeriesMetadata, t_idx: int) -> str:
     return "POST-BLEACH"
 
 
+def _format_hud_text(meta: LifSeriesMetadata, t_idx: int = 0) -> str:
+    """Format multi-line technical overlay text for the Napari viewer."""
+    idx_str = "+".join(str(i) for i in meta.sub_series_indices) or str(meta.index)
+    px_str = f"{meta.pixel_size_um:.3f} µm/px" if meta.pixel_size_um else "N/A"
+    fov_str = (
+        f"{meta.fov_width_um:.1f}×{meta.fov_height_um:.1f} µm"
+        if meta.fov_width_um and meta.fov_height_um
+        else "N/A"
+    )
+    bits_str = f"{meta.bit_depth}-bit" if meta.bit_depth else ""
+    zoom_str = f" | Zoom: {meta.zoom:g}×" if meta.zoom else ""
+
+    t_s = (
+        meta.frame_times_s[t_idx]
+        if 0 <= t_idx < len(meta.frame_times_s)
+        else float(t_idx)
+    )
+    phase = _phase_label(meta, t_idx)
+
+    laser_parts: list[str] = []
+    if meta.bleach_laser_nm:
+        pct = f" ({meta.bleach_laser_pct:g}%)" if meta.bleach_laser_pct else ""
+        laser_parts.append(f"Bleach: {meta.bleach_laser_nm} nm{pct}")
+    if meta.bleach_duration_ms:
+        laser_parts.append(f"Pulse: {meta.bleach_duration_ms:.0f} ms")
+    if meta.n_irradiated_cells:
+        laser_parts.append(f"ROIs: {meta.n_irradiated_cells}")
+    laser_line = " | ".join(laser_parts)
+
+    lines = [
+        f"[{idx_str}] {meta.full_path}",
+        (
+            f"Res: {meta.size_x}×{meta.size_y} px ({bits_str}) | "
+            f"FOV: {fov_str} | Scale: {px_str}{zoom_str}"
+        ),
+        f"Frame: {t_idx + 1}/{meta.size_t} | t = {t_s:.2f} s | {phase}",
+    ]
+    if laser_line:
+        lines.append(laser_line)
+    return "\n".join(lines)
+
+
 def list_lif_series(
     path: str | Path,
     exclude_snapshots: bool = True,
@@ -102,6 +144,11 @@ def view_in_napari(
     )
     viewer = napari.Viewer(title=title)
 
+    px_y = meta.pixel_size_y_um or meta.pixel_size_x_um or 1.0
+    px_x = meta.pixel_size_x_um or px_y
+    scale_3d = (1.0, px_y, px_x)
+    scale_2d = (px_y, px_x)
+
     n_channels = frames.shape[1]
     for c in range(n_channels):
         ch_name = channel_names[c] if c < len(channel_names) else f"Channel {c}"
@@ -112,6 +159,7 @@ def view_in_napari(
             name=ch_name,
             colormap=cmap,
             blending=blending,
+            scale=scale_3d,
         )
 
     if meta.laser_coordinates:
@@ -131,6 +179,7 @@ def view_in_napari(
             size=14,
             face_color="lime",
             border_color="lime",
+            scale=scale_2d,
             text={
                 "string": labels,
                 "color": "lime",
@@ -150,11 +199,28 @@ def view_in_napari(
                 edge_color="lime",
                 face_color="transparent",
                 edge_width=1.5,
+                scale=scale_2d,
             )
 
-    # Update status bar with frame timestamp when scrubbing time slider
+    # Configure physical scale bar in µm (bottom-right corner)
+    viewer.scale_bar.visible = True
+    if meta.pixel_size_um:
+        try:
+            viewer.scale_bar.unit = "um"
+        except Exception:
+            logger.debug("Could not set scale_bar.unit to 'um'")
+
+    # Configure technical HUD overlay (top-left corner)
+    viewer.text_overlay.visible = True
+    viewer.text_overlay.position = "top_left"
+    viewer.text_overlay.color = "white"
+    viewer.text_overlay.font_size = 10
+    viewer.text_overlay.text = _format_hud_text(meta, 0)
+
+    # Update status bar and HUD overlay when scrubbing time slider
     def _update_time_status(event: Any) -> None:
-        step = viewer.dims.current_step[0]
+        step = int(viewer.dims.current_step[0])
+        viewer.text_overlay.text = _format_hud_text(meta, step)
         if 0 <= step < len(meta.frame_times_s):
             t_s = meta.frame_times_s[step]
             phase = _phase_label(meta, step)
