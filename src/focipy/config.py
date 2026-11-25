@@ -1,9 +1,11 @@
 """Pipeline configuration for FociPy.
 
-Centralized configuration for all pipeline parameters.
-Uses Python dataclasses with YAML loading/saving support,
-so every analysis run is fully reproducible.
+Centralized configuration for all pipeline parameters using physical spatial
+units (µm and µm²) so identical settings work across different resolutions
+(256×256, 512×512, 1024×1024) and optical zoom levels.
 """
+
+from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -16,32 +18,55 @@ DEFAULT_CONFIG_PATH = (
 )
 
 
+def um_to_px(value_um: float, pixel_size_um: float) -> float:
+    """Convert a physical length in micrometers to pixels."""
+    if pixel_size_um <= 0:
+        raise ValueError(f"pixel_size_um must be positive, got {pixel_size_um}")
+    return value_um / pixel_size_um
+
+
+def um2_to_px2(area_um2: float, pixel_size_um: float) -> float:
+    """Convert a physical area in square micrometers to square pixels."""
+    if pixel_size_um <= 0:
+        raise ValueError(f"pixel_size_um must be positive, got {pixel_size_um}")
+    return area_um2 / (pixel_size_um**2)
+
+
 @dataclass
 class SegmentationConfig:
-    """Configuration for nuclear segmentation."""
+    """Configuration for nuclear and background segmentation (physical units)."""
 
-    method: str = "otsu_watershed"
-    gaussian_sigma: float = 2.0
-    min_area_px: int = 500
-    max_area_px: int = 50000
+    method: str = "li_watershed"
+    gaussian_sigma_um: float = 0.20
+    min_nucleus_area_um2: float = 40.0
+    max_nucleus_area_um2: float = 600.0
+    min_nucleus_distance_um: float = 5.0
+    bg_dilation_um: float = 2.0
+    mask_endogenous_foci: bool = True
+    endogenous_mad_threshold: float = 3.5
 
 
 @dataclass
 class KineticsConfig:
     """Configuration for ROI tracking and recruitment kinetics extraction."""
 
-    roi_radius_px: int = 15
+    roi_radius_um: float = 1.0
+    search_window_um: float = 2.5
+    max_local_shift_um: float = 0.8
+    snr_track_threshold: float = 2.0
+    snr_responder_threshold: float = 2.5
     drift_correction: bool = True
-    background_method: str = "outside_nuclei"
+    background_method: str = "dilated_median"
 
 
 @dataclass
 class PreprocessingConfig:
-    """Configuration for image preprocessing."""
+    """Configuration for auxiliary-track image preprocessing and QC."""
 
-    apply_gaussian: bool = True
-    gaussian_sigma: float = 1.0
-    apply_median: bool = False
+    apply_gaussian_aux: bool = True
+    gaussian_sigma_um: float = 0.15
+    apply_median_aux: bool = False
+    saturation_max_fraction: float = 0.01
 
 
 @dataclass
@@ -58,11 +83,13 @@ class PipelineConfig:
     """Master configuration for the FociPy analysis pipeline."""
 
     experiment_name: str = "default_experiment"
-    microscope_model: str = "Leica TCS SP5 FLIM"
+    microscope_model: str = "Leica TCS SP5"
     objective: str = "HCX PL APO 63x/1.40 OIL"
     laser_wavelength_nm: int = 488
-    dapi_channel: int = 0
-    protein_channel: int = 1
+    protein_channel: int = 0
+    transmitted_channel: int | None = 1
+    segmentation_channel: int = 0
+    fallback_pixel_size_um: float = 0.0601
     time_interval_s: float | None = None
 
     segmentation: SegmentationConfig = field(default_factory=SegmentationConfig)
@@ -70,12 +97,23 @@ class PipelineConfig:
     preprocessing: PreprocessingConfig = field(default_factory=PreprocessingConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
 
+    def resolve_pixel_size_um(self, pixel_size_um: float | None) -> float:
+        """Return image pixel size in µm, falling back to `fallback_pixel_size_um`."""
+        if pixel_size_um is not None and pixel_size_um > 0:
+            return pixel_size_um
+        return self.fallback_pixel_size_um
+
+    def roi_radius_px(self, pixel_size_um: float | None = None) -> float:
+        """Convert configured `roi_radius_um` to pixels for a given image scale."""
+        px_um = self.resolve_pixel_size_um(pixel_size_um)
+        return um_to_px(self.kinetics.roi_radius_um, px_um)
+
     def to_dict(self) -> dict[str, Any]:
         """Convert configuration to a nested dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "PipelineConfig":
+    def from_dict(cls, data: dict[str, Any]) -> PipelineConfig:
         """Create a PipelineConfig instance from a dictionary."""
         if not data:
             return cls()
@@ -95,7 +133,7 @@ class PipelineConfig:
         )
 
     @classmethod
-    def from_yaml(cls, path: str | Path = DEFAULT_CONFIG_PATH) -> "PipelineConfig":
+    def from_yaml(cls, path: str | Path = DEFAULT_CONFIG_PATH) -> PipelineConfig:
         """Load configuration from a YAML file.
 
         Args:

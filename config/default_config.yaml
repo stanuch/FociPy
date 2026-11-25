@@ -1,28 +1,43 @@
-# FociPy — default pipeline configuration
+# FociPy — default pipeline configuration (all spatial parameters in physical µm / µm²)
 
 experiment_name: "default_experiment"
-microscope_model: "Leica TCS SP5 FLIM"
+microscope_model: "Leica TCS SP5"
 objective: "HCX PL APO 63x/1.40 OIL"
 laser_wavelength_nm: 488
-dapi_channel: 0
-protein_channel: 1
-time_interval_s: null  # null = read from file metadata
+
+# Channel indices in (T, C, Y, X) tensor
+protein_channel: 0        # Fluorescence channel (e.g. mRFP-XRCC1, mCherry-53BP1)
+transmitted_channel: 1    # Transmitted light / DIC channel for Z-drift QC (null if absent)
+segmentation_channel: 0   # Channel used for nuclear segmentation (0 = protein nucleoplasm)
+
+# Metadata fallbacks (used only when missing in raw files, e.g. plain .tif)
+fallback_pixel_size_um: 0.0601
+time_interval_s: null     # null = read from file metadata
 
 segmentation:
-  method: "otsu_watershed"
-  gaussian_sigma: 2.0
-  min_area_px: 500
-  max_area_px: 50000
+  method: "li_watershed"          # "li_watershed", "otsu_watershed", or "cellpose"
+  gaussian_sigma_um: 0.20         # Smoothing sigma on auxiliary track [µm]
+  min_nucleus_area_um2: 40.0      # Minimum HeLa nucleus area [µm²]
+  max_nucleus_area_um2: 600.0     # Maximum HeLa nucleus area [µm²]
+  min_nucleus_distance_um: 5.0    # Minimum distance between Watershed seeds [µm]
+  bg_dilation_um: 2.0             # Buffer dilation around all objects for I_bg [µm]
+  mask_endogenous_foci: true      # Mask pre-existing 53BP1-NB foci in t_pre
+  endogenous_mad_threshold: 3.5   # Robust MAD threshold for pre-existing foci
 
 kinetics:
-  roi_radius_px: 15
+  roi_radius_um: 1.0              # Circular measurement ROI radius [µm]
+  search_window_um: 2.5           # Local window radius around hit point [µm]
+  max_local_shift_um: 0.8         # Max local refinement shift from rigid track [µm]
+  snr_track_threshold: 2.0        # SNR gate for local refinement (below -> rigid fallback)
+  snr_responder_threshold: 2.5    # SNR threshold to classify cell as responder
   drift_correction: true
-  background_method: "outside_nuclei"
+  background_method: "dilated_median"
 
 preprocessing:
-  apply_gaussian: true
-  gaussian_sigma: 1.0
-  apply_median: false
+  apply_gaussian_aux: true        # Applied ONLY on auxiliary track (never on RAW)
+  gaussian_sigma_um: 0.15         # Auxiliary smoothing sigma [µm]
+  apply_median_aux: false         # Optional 3x3 median filter for hot pixels on auxiliary track
+  saturation_max_fraction: 0.01   # Max fraction of saturated pixels in ROI before QC flag
 
 output:
   export_qc_images: true

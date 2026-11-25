@@ -34,7 +34,7 @@ COMMAND OPTIONS
 
   focipy view <file.lif>
     -s, --series SERIES      Series index (e.g. 4) or name (e.g. '25uJ_01')
-    -c, --config FILE        YAML config path (reads kinetics.roi_radius_px)
+    -c, --config FILE        YAML config path (reads kinetics.roi_radius_um)
     --backend BACKEND        Viewer backend: auto, napari, matplotlib [auto]
     --no-merge               Do not merge FRAP Series with FRAP Pb2/Pb3 phases
 
@@ -180,7 +180,7 @@ def _build_parser() -> tuple[
         type=Path,
         default=None,
         metavar="FILE",
-        help="Path to YAML configuration file (reads kinetics.roi_radius_px)",
+        help="Path to YAML configuration file (reads kinetics.roi_radius_um)",
     )
     view_parser.add_argument(
         "--backend",
@@ -279,7 +279,7 @@ def main() -> None:
         view_lif_series(
             args.path,
             series=series_arg,
-            roi_radius_px=cfg.kinetics.roi_radius_px,
+            roi_radius_um=cfg.kinetics.roi_radius_um,
             backend=args.backend,
             merge_pb_series=not args.no_merge,
         )

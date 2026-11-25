@@ -35,7 +35,9 @@ def _phase_label(meta: LifSeriesMetadata, t_idx: int) -> str:
 def _format_hud_text(meta: LifSeriesMetadata, t_idx: int = 0) -> str:
     """Format multi-line technical overlay text for the Napari viewer."""
     idx_str = "+".join(str(i) for i in meta.sub_series_indices) or str(meta.index)
-    px_str = f"{meta.pixel_size_um:.3f} µm/px" if meta.pixel_size_um else "N/A"
+    px_str = (
+        f"{meta.pixel_size_um * 1000:.1f} nm/px" if meta.pixel_size_um else "N/A"
+    )
     fov_str = (
         f"{meta.fov_width_um:.1f}×{meta.fov_height_um:.1f} µm"
         if meta.fov_width_um and meta.fov_height_um
@@ -116,7 +118,7 @@ def list_lif_series(
 def view_in_napari(
     frames: np.ndarray,
     meta: LifSeriesMetadata,
-    roi_radius_px: int = 15,
+    roi_radius_um: float = 1.0,
     channel_names: tuple[str, ...] = ("Fluorescence (Protein)", "Transmitted / Ch1"),
     channel_colormaps: tuple[str, ...] = ("magma", "gray"),
     run: bool = True,
@@ -126,7 +128,7 @@ def view_in_napari(
     Adds each channel as an independent image layer and, if `meta.laser_coordinates`
     are present in the file, overlays:
     - A `Points` layer (`Laser Target (+)`) marking `(y_px, x_px)` hit locations.
-    - A `Shapes` layer (`ROI Radius`) showing the circular measurement area.
+    - A `Shapes` layer (`ROI Radius`) showing the circular measurement area in µm/nm.
     """
     try:
         napari: Any = importlib.import_module("napari")
@@ -138,29 +140,43 @@ def view_in_napari(
         ) from exc
 
     idx_str = "+".join(str(i) for i in meta.sub_series_indices)
+    px_nm_title = (
+        f"{meta.pixel_size_um * 1000:.1f} nm/px" if meta.pixel_size_um else "N/A"
+    )
     title = (
         f"FociPy — [{idx_str}] {meta.full_path} "
-        f"(px={meta.pixel_size_um or 0:.3f} µm, pre={meta.pre_bleach_frames})"
+        f"({px_nm_title}, pre={meta.pre_bleach_frames})"
     )
     viewer = napari.Viewer(title=title)
 
-    px_y = meta.pixel_size_y_um or meta.pixel_size_x_um or 1.0
-    px_x = meta.pixel_size_x_um or px_y
-    scale_3d = (1.0, px_y, px_x)
-    scale_2d = (px_y, px_x)
+    has_phys_scale = bool(meta.pixel_size_x_um or meta.pixel_size_y_um)
+    if has_phys_scale:
+        px_y_nm = (meta.pixel_size_y_um or meta.pixel_size_x_um or 1.0) * 1000.0
+        px_x_nm = (meta.pixel_size_x_um or meta.pixel_size_y_um or 1.0) * 1000.0
+        scale_3d: tuple[float, float, float] = (1.0, px_y_nm, px_x_nm)
+        scale_2d: tuple[float, float] = (px_y_nm, px_x_nm)
+        units_3d: tuple[str, str, str] | None = ("s", "nm", "nm")
+        units_2d: tuple[str, str] | None = ("nm", "nm")
+    else:
+        scale_3d = (1.0, 1.0, 1.0)
+        scale_2d = (1.0, 1.0)
+        units_3d = None
+        units_2d = None
 
     n_channels = frames.shape[1]
     for c in range(n_channels):
         ch_name = channel_names[c] if c < len(channel_names) else f"Channel {c}"
         cmap = channel_colormaps[c] if c < len(channel_colormaps) else "gray"
         blending = "additive" if c > 0 else "translucent"
-        viewer.add_image(
-            frames[:, c, :, :],
-            name=ch_name,
-            colormap=cmap,
-            blending=blending,
-            scale=scale_3d,
-        )
+        img_kwargs: dict[str, Any] = {
+            "name": ch_name,
+            "colormap": cmap,
+            "blending": blending,
+            "scale": scale_3d,
+        }
+        if units_3d is not None:
+            img_kwargs["units"] = units_3d
+        viewer.add_image(frames[:, c, :, :], **img_kwargs)
 
     if meta.laser_coordinates:
         # Napari uses (row, col) = (y_px, x_px) for 2D spatial coordinates
@@ -172,43 +188,52 @@ def view_in_napari(
             for pt in meta.laser_coordinates
         ]
 
-        viewer.add_points(
-            points_yx,
-            name="Laser Target (+)",
-            symbol="cross",
-            size=14,
-            face_color="lime",
-            border_color="lime",
-            scale=scale_2d,
-            text={
+        pts_kwargs: dict[str, Any] = {
+            "name": "Laser Target (+)",
+            "symbol": "cross",
+            "size": 14,
+            "face_color": "lime",
+            "border_color": "lime",
+            "scale": scale_2d,
+            "text": {
                 "string": labels,
                 "color": "lime",
                 "translation": np.array([-10, 12]),
             },
-        )
+        }
+        if units_2d is not None:
+            pts_kwargs["units"] = units_2d
+        viewer.add_points(points_yx, **pts_kwargs)
 
-        if roi_radius_px > 0:
+        if roi_radius_um > 0:
+            if has_phys_scale:
+                rx_px = (roi_radius_um * 1000.0) / scale_2d[1]
+                ry_px = (roi_radius_um * 1000.0) / scale_2d[0]
+                roi_layer_name = (
+                    f"ROI (r={roi_radius_um * 1000:.0f} nm / {rx_px:.1f} px)"
+                )
+            else:
+                rx_px = ry_px = roi_radius_um
+                roi_layer_name = f"ROI (r={roi_radius_um:g} px)"
             circles = [
-                np.array([[pt.y_px, pt.x_px], [roi_radius_px, roi_radius_px]])
+                np.array([[pt.y_px, pt.x_px], [ry_px, rx_px]])
                 for pt in meta.laser_coordinates
             ]
-            viewer.add_shapes(
-                circles,
-                shape_type="ellipse",
-                name=f"ROI (r={roi_radius_px} px)",
-                edge_color="lime",
-                face_color="transparent",
-                edge_width=1.5,
-                scale=scale_2d,
-            )
+            shp_kwargs: dict[str, Any] = {
+                "shape_type": "ellipse",
+                "name": roi_layer_name,
+                "edge_color": "lime",
+                "face_color": "transparent",
+                "edge_width": 1.5,
+                "scale": scale_2d,
+            }
+            if units_2d is not None:
+                shp_kwargs["units"] = units_2d
+            viewer.add_shapes(circles, **shp_kwargs)
 
-    # Configure physical scale bar in µm (bottom-right corner)
+    # Configure physical scale bar (Napari 0.6+ reads units from layers: nm / µm)
     viewer.scale_bar.visible = True
-    if meta.pixel_size_um:
-        try:
-            viewer.scale_bar.unit = "um"
-        except Exception:
-            logger.debug("Could not set scale_bar.unit to 'um'")
+    viewer.scale_bar.box = True
 
     # Configure technical HUD overlay (top-left corner)
     viewer.text_overlay.visible = True
@@ -238,7 +263,7 @@ def view_in_napari(
 def view_in_matplotlib(
     frames: np.ndarray,
     meta: LifSeriesMetadata,
-    roi_radius_px: int = 15,
+    roi_radius_um: float = 1.0,
     show: bool = True,
 ) -> Any:
     """Interactive Matplotlib timelapse viewer with a time slider and laser markers."""
@@ -246,9 +271,21 @@ def view_in_matplotlib(
     from matplotlib.patches import Circle
     from matplotlib.widgets import Slider
 
-    n_t, n_c, _ny, _nx = frames.shape
+    n_t, n_c, ny, nx = frames.shape
     fig, axes = plt.subplots(1, n_c, figsize=(6 * n_c, 6), squeeze=False)
     plt.subplots_adjust(bottom=0.18, top=0.88)
+
+    has_phys_scale = bool(meta.pixel_size_x_um or meta.pixel_size_y_um)
+    px_x_nm = (meta.pixel_size_x_um or meta.pixel_size_y_um or 1.0) * 1000.0
+    px_y_nm = (meta.pixel_size_y_um or meta.pixel_size_x_um or 1.0) * 1000.0
+    coord_scale_x = px_x_nm if has_phys_scale else 1.0
+    coord_scale_y = px_y_nm if has_phys_scale else 1.0
+    axis_unit = "nm" if has_phys_scale else "px"
+    extent = (
+        (0.0, nx * px_x_nm, ny * px_y_nm, 0.0)
+        if has_phys_scale
+        else None
+    )
 
     cmaps = ["magma", "gray", "viridis", "inferno"]
     im_artists = []
@@ -263,25 +300,31 @@ def view_in_matplotlib(
             cmap=cmaps[c % len(cmaps)],
             vmin=vmin,
             vmax=max(vmax, vmin + 1.0),
+            extent=extent,
         )
         im_artists.append(im)
         ax.set_title(f"Channel {c}")
+        ax.set_xlabel(f"X [{axis_unit}]")
+        ax.set_ylabel(f"Y [{axis_unit}]")
 
         for pt in meta.laser_coordinates:
+            px_coord = pt.x_px * coord_scale_x
+            py_coord = pt.y_px * coord_scale_y
             ax.plot(
-                pt.x_px,
-                pt.y_px,
+                px_coord,
+                py_coord,
                 marker="+",
                 color="lime",
                 markersize=14,
                 markeredgewidth=2.0,
                 label=pt.name,
             )
-            if roi_radius_px > 0:
+            if roi_radius_um > 0:
+                r_plot = roi_radius_um * 1000.0 if has_phys_scale else roi_radius_um
                 ax.add_patch(
                     Circle(
-                        (pt.x_px, pt.y_px),
-                        radius=roi_radius_px,
+                        (px_coord, py_coord),
+                        radius=r_plot,
                         edgecolor="lime",
                         facecolor="none",
                         linestyle="--",
@@ -290,7 +333,7 @@ def view_in_matplotlib(
                 )
             ax.annotate(
                 pt.name,
-                (pt.x_px, pt.y_px),
+                (px_coord, py_coord),
                 xytext=(6, -6),
                 textcoords="offset points",
                 color="lime",
@@ -307,9 +350,12 @@ def view_in_matplotlib(
             else f"frame {t_idx}"
         )
         phase = _phase_label(meta, t_idx)
+        scale_str = (
+            f"{meta.pixel_size_um * 1000:.1f} nm/px" if meta.pixel_size_um else "N/A"
+        )
         return (
             f"[{idx_str}] {meta.full_path} | Frame {t_idx + 1}/{n_t} "
-            f"({t_str}, {phase}) | px = {meta.pixel_size_um or 0:.3f} µm"
+            f"({t_str}, {phase}) | {scale_str}"
         )
 
     fig.suptitle(_title_for_frame(0), fontsize=11, fontweight="bold")
@@ -344,7 +390,7 @@ def view_in_matplotlib(
 def view_lif_series(
     path: str | Path,
     series: int | str | None = None,
-    roi_radius_px: int = 15,
+    roi_radius_um: float = 1.0,
     backend: str = "auto",
     merge_pb_series: bool = True,
 ) -> Any:
@@ -354,7 +400,8 @@ def view_lif_series(
         path: Path to the `.lif` file.
         series: Series index (`int`) or name substring (`str`). If `None`,
             automatically selects the first timelapse series in the file.
-        roi_radius_px: Radius of the ROI circle drawn around each laser point.
+        roi_radius_um: Physical radius [µm] of the ROI circle drawn around each
+            laser target point (automatically converted to pixels via metadata).
         backend: `"napari"`, `"matplotlib"`, or `"auto"` (tries Napari first,
             falls back to Matplotlib if Napari is not installed).
         merge_pb_series: Whether to automatically concatenate `FRAP Series` and
@@ -381,11 +428,11 @@ def view_lif_series(
     frames, meta = load_lif_series(path, series, merge_pb_series=merge_pb_series)
 
     if backend == "napari":
-        return view_in_napari(frames, meta, roi_radius_px=roi_radius_px)
+        return view_in_napari(frames, meta, roi_radius_um=roi_radius_um)
     if backend == "matplotlib":
-        return view_in_matplotlib(frames, meta, roi_radius_px=roi_radius_px)
+        return view_in_matplotlib(frames, meta, roi_radius_um=roi_radius_um)
 
     if importlib.util.find_spec("napari") is not None:
-        return view_in_napari(frames, meta, roi_radius_px=roi_radius_px)
+        return view_in_napari(frames, meta, roi_radius_um=roi_radius_um)
     logger.info("Napari not installed; using Matplotlib interactive viewer.")
-    return view_in_matplotlib(frames, meta, roi_radius_px=roi_radius_px)
+    return view_in_matplotlib(frames, meta, roi_radius_um=roi_radius_um)

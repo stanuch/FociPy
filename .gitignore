@@ -13,6 +13,8 @@ __pycache__/
 data/raw/
 data/processed/
 results/
+docs/notes/
+docs/PROJECT_OVERVIEW.md
 
 # C extensions
 *.so
