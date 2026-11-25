@@ -2,16 +2,17 @@
   <img src="docs/images/focipy_logo.png" alt="FociPy Logo" width="500">
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/Version-0.4.0-blue" alt="Version">
-  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Environment-Conda-44A833?logo=anaconda&logoColor=white" alt="Conda">
-  <img src="https://img.shields.io/badge/Format-Leica_.lif_%7C_TIFF-orange" alt="Formats">
-  <img src="https://img.shields.io/badge/Viewer-Napari-0092ff" alt="Napari">
-  <img src="https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white" alt="Pytest">
-  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
-</p>
+![Version](https://img.shields.io/badge/Version-0.4.1-blue)
+![Conda](https://img.shields.io/badge/Conda-conda--forge-44A833?logo=condaforge&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Pytest](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
+![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
+![Google Gemini](https://img.shields.io/badge/AI_Assisted-Google_Gemini-white?logo=googlegemini&logoColor=white)
+![Formats](https://img.shields.io/badge/Formats-Leica_.lif_%7C_OME--TIFF-E67E22)
+![Napari](https://img.shields.io/badge/Viewer-Napari_0.10-0092FF)
+![Stack](https://img.shields.io/badge/Stack-NumPy_%7C_SciPy_%7C_scikit--image-013243?logo=numpy&logoColor=white)
+![Data](https://img.shields.io/badge/Data-Pandas_%7C_PyYAML-150458?logo=pandas&logoColor=white)
 
 > [!NOTE]
 > **Work in Progress**: FociPy is actively developed for an MSc thesis. Data ingestion, metadata parsing, and visualization tools are operational. Segmentation and automated recruitment kinetics extraction are under active development. 

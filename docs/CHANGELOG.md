@@ -5,6 +5,27 @@ All notable changes to the **FociPy** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-11-25
+
+### Changed
+
+- **Physical spatial units in configuration (`config.py`, `config/default_config.yaml`)**:
+  - Migrated all spatial pipeline parameters from raw pixels to physical micrometers (`µm` / `µm²`): `roi_radius_um`, `search_window_um`, `max_local_shift_um`, `min_nucleus_area_um2`, `max_nucleus_area_um2`, `min_nucleus_distance_um`, `bg_dilation_um`, and `gaussian_sigma_um`, ensuring consistent behavior across different image resolutions (`256×256`, `512×512`, `1024×1024`) and optical zoom levels.
+  - Updated default channel mapping to match live-cell microirradiation acquisitions (`protein_channel: 0`, `transmitted_channel: 1`, `segmentation_channel: 0`) and added `fallback_pixel_size_um`.
+  - Switched default segmentation strategy to `li_watershed` with pre-bleach endogenous foci masking options (`mask_endogenous_foci`, `endogenous_mad_threshold`) and SNR gating thresholds (`snr_track_threshold`, `snr_responder_threshold`).
+- **Physical scale in viewers (`visualization.py`, `__main__.py`)**:
+  - Updated `view_in_napari` for Napari `0.10.0` API by passing explicit physical layer units (`units=("s", "nm", "nm")` and `units=("nm", "nm")`) so the scale bar dynamically renders in `µm`/`nm` instead of `px` (with `scale_bar.box = True`).
+  - Updated HUD overlay (`_format_hud_text`) and ROI layer labels to display physical scale (`nm/px`) and radius (`nm` + `px`).
+  - Scaled `view_in_matplotlib` spatial axes (`extent`) to physical `nm` and replaced direct `Figure` attribute monkey-patching with a `close_event` callback for Pylance/Ruff compatibility.
+
+### Added
+
+- **Unit conversion helpers (`config.py`)**: `um_to_px()`, `um2_to_px2()`, `PipelineConfig.resolve_pixel_size_um()`, and `PipelineConfig.roi_radius_px()`.
+- **Expanded test suite (`tests/test_config.py`)**: added `test_physical_unit_conversions_across_resolutions` verifying physical-to-pixel scaling across `512×512` and `1024×1024` grids.
+- **Project documentation**: added comprehensive master project overview in `docs/PROJECT_OVERVIEW.md` (scientific context, literature benchmarks, critical audit of `docs/notes/`, two-level algorithm architecture, and implementation roadmap).
+
+---
+
 ## [0.4.0] - 2026-11-09
 
 ### Added

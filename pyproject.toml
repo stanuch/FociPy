@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "focipy"
-version = "0.4.0"
+version = "0.4.1"
 description = "Automated kinetics analysis of DNA repair protein recruitment at laser-induced damage sites."
 readme = "README.md"
 license = {text = "MIT"}
